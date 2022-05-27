@@ -20,7 +20,7 @@ def initWindow():
 def showStartScreen():
     canvas = Canvas(
         window,
-        bg = "#ffffff",
+        bg = "#00ff00",
         height = 742,
         width = 641,
         bd = 0,
