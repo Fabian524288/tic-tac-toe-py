@@ -6,9 +6,6 @@ IMG_PLAY = PhotoImage(file = f"./btn-play.png") # Lade ein Bild aus Computer
 IMG_QUIT = PhotoImage(file = f"./btn-quit.png")
 IMG_BACKGROUND = PhotoImage(file = f"./background.png")
 
-def btn_clicked():
-    print("Button Clicked")
-
 def close():
     window.quit()
 
