@@ -388,6 +388,22 @@ def refreshGameBoard():
         for col in range(0,3):
             showCell(row, col)
 
+def clearBoard():
+    global gameBoard
+    for row in range(0,3):
+        for col in range(0,3):
+            gameBoard[row][col] = 0
+
+def resetGame():
+    global gameStatus
+    clearBoard()
+    gameStatus = GameStatusEnum.NOT_END
+    refreshGameBoard()
+
+def gotoMenu():
+    resetGame()
+    showStartScreen()
+
 def showGameArea():
     global playerName1
     global playerName2
@@ -406,14 +422,14 @@ def showGameArea():
         relief = "ridge")
     gameArea_canvas.place(x = 0, y = 0)
 
-    btn_ShowStartScreen = Button(
+    btn_GotoMenu = Button(
         image = IMG_MENU,
         borderwidth = 0,
         highlightthickness = 0,
-        command = showStartScreen,
+        command = gotoMenu,
         relief = "flat")
 
-    btn_ShowStartScreen.place(
+    btn_GotoMenu.place(
         x = 641, y = 15,
         width = 100,
         height = 35)
@@ -422,7 +438,7 @@ def showGameArea():
         image = IMG_NEWGAME,
         borderwidth = 0,
         highlightthickness = 0,
-        command = None,
+        command = resetGame,
         relief = "flat")
 
     btn_Newgame.place(
