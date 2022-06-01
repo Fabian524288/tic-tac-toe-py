@@ -5,12 +5,11 @@ from tkinter.tix import CELL, TEXT
 from turtle import st
 import enum
 
-class GameStatus(enum.Enum):
-    NOT_STARTED = 1
-    PLAYING = 2
-    PLAYER1_WIN = 3
-    PLAYER1_LOSE = 4
-    DRAW = 5
+class GameStatusEnum(enum.Enum):
+    NOT_END = 1
+    PLAYER1_WIN = 2
+    PLAYER1_LOSE = 3
+    DRAW = 4
 
 window = Tk()
 
@@ -30,9 +29,11 @@ SYMBOL_O = PhotoImage(file = "./assets/nought.png")
 numberOfPlayers = 0 # Anzahl der Spieler
 playerName1 = StringVar()
 playerName2 = StringVar()
-gameStatus = GameStatus.NOT_STARTED
+gameStatus = GameStatusEnum.NOT_END
 player1inTurn = None
 gameMessage = None
+textGameMessage = None
+gameArea_canvas = None
 gameBoard = [[0,0,0],[0,0,0],[0,0,0]]
 # 0 = leer, 1 = SYMBOL_X, 2 = SYMBOL_O
 
@@ -118,6 +119,56 @@ def showPlayingScreen():
         width = 281,
         height = 79)
 
+def checkPlayer1win():
+    global gameBoard
+    if gameBoard[0][0] == 1 and gameBoard[0][1] == 1 and gameBoard [0][2] == 1:
+        return True
+    if gameBoard[1][0] == 1 and gameBoard[1][1] == 1 and gameBoard [1][2] == 1:
+        return True
+    if gameBoard[2][0] == 1 and gameBoard[2][1] == 1 and gameBoard [2][2] == 1:
+        return True
+    if gameBoard[0][0] == 1 and gameBoard[1][0] == 1 and gameBoard [2][0] == 1:
+        return True
+    if gameBoard[0][1] == 1 and gameBoard[1][1] == 1 and gameBoard [2][1] == 1:
+        return True
+    if gameBoard[0][2] == 1 and gameBoard[1][2] == 1 and gameBoard [2][2] == 1:
+        return True
+    if gameBoard[0][0] == 1 and gameBoard[1][1] == 1 and gameBoard [2][2] == 1:
+        return True
+    if gameBoard[0][2] == 1 and gameBoard[1][1] == 1 and gameBoard [2][0] == 1:
+        return True
+    else:
+        return False
+
+def checkPlayer2win():
+    global gameBoard
+    if gameBoard[0][0] == 2 and gameBoard[0][1] == 2 and gameBoard [0][2] == 2:
+        return True
+    if gameBoard[1][0] == 2 and gameBoard[1][1] == 2 and gameBoard [1][2] == 2:
+        return True
+    if gameBoard[2][0] == 2 and gameBoard[2][1] == 2 and gameBoard [2][2] == 2:
+        return True
+    if gameBoard[0][0] == 2 and gameBoard[1][0] == 2 and gameBoard [2][0] == 2:
+        return True
+    if gameBoard[0][1] == 2 and gameBoard[1][1] == 2 and gameBoard [2][1] == 2:
+        return True
+    if gameBoard[0][2] == 2 and gameBoard[1][2] == 2 and gameBoard [2][2] == 2:
+        return True
+    if gameBoard[0][0] == 2 and gameBoard[1][1] == 2 and gameBoard [2][2] == 2:
+        return True
+    if gameBoard[0][2] == 2 and gameBoard[1][1] == 2 and gameBoard [2][0] == 2:
+        return True
+    else:
+        return False
+
+def checkGameNotEnd(): # Überprüft, ob das Spiel noch läuft
+    global gameBoard
+    for row in range(0,3):
+        for col in range(0,3):
+            if gameBoard[row][col] == 0:
+                return True
+    return False
+
 def inputPlayerName1():
     global numberOfPlayers
     numberOfPlayers = 1
@@ -137,14 +188,14 @@ def inputPlayerName1():
         fill = "#000000",
         font = ("Arial", int(12.0)))
 
-    btn_showGameArea = Button(
+    btn_Go = Button(
         image = IMG_GO,
         borderwidth = 0,
         highlightthickness = 0,
-        command = showGameArea,
+        command = startPlaying,
         relief = "flat")
 
-    btn_showGameArea.place(
+    btn_Go.place(
         x = 180, y = 459,
         width = 281,
         height = 79)
@@ -231,17 +282,55 @@ def getPlayer2Name():
         return playerName2.get()
 
 def startPlaying():
+    print('Start playing')
     global playerName1
     global player1inTurn
     global gameStatus
-    showGameArea()
     player1inTurn = True
-    while (gameStatus == GameStatus.PLAYING):
+    showGameArea()
+
+def refreshGameMessage():
+    global gameMessage
+    global player1inTurn
+    global playerName1
+    global gameStatus
+    if gameStatus == GameStatusEnum.DRAW:
+        gameMessage = "It's a draw"
+    elif gameStatus == GameStatusEnum.PLAYER1_WIN:
+        gameMessage = "You win! Congrats!"
+    elif gameStatus == GameStatusEnum.PLAYER1_LOSE:
+        gameMessage = "You lose :'("
+    else:
         if (player1inTurn):
             gameMessage = f"{playerName1.get()}'s turn!"
         else:
             gameMessage = f"{getPlayer2Name()}'s turn!"
 
+    print('refreshGameMessage')
+    print(gameMessage)
+
+def createCellClickHandler(row, col):
+    def OnClick():
+        global gameBoard
+        global player1inTurn
+        global gameStatus
+        if gameStatus != GameStatusEnum.NOT_END:
+            print('GAME END°!')
+            return
+        cellValue = gameBoard[row][col]
+        if cellValue != 0:
+            return
+        elif player1inTurn:
+            gameBoard[row][col] = 1
+            player1inTurn = False
+            refreshGameBoard()
+        else:
+            gameBoard[row][col] = 2
+            player1inTurn = True
+            refreshGameBoard()
+        print('------------')
+        print(gameBoard)
+    return OnClick
 
 def showCell(row, col):
     global gameBoard
@@ -255,7 +344,7 @@ def showCell(row, col):
         image = cellImage,
         borderwidth = 0,
         highlightthickness = 0,
-        command = None,
+        command = createCellClickHandler(row, col),
         relief = "flat")
 
     x0 = 242
@@ -270,15 +359,44 @@ def showCell(row, col):
         width = 140,
         height = 140)
 
+def refreshGameStatus():
+    global gameStatus
+    if checkPlayer1win():
+        gameStatus = GameStatusEnum.PLAYER1_WIN
+    elif checkPlayer2win():
+        gameStatus = GameStatusEnum.PLAYER1_LOSE
+    elif checkGameNotEnd():
+        pass
+    else:
+        gameStatus = GameStatusEnum.DRAW
+
+    print('refreshGamestatus')
+    print(gameStatus)
+
+# Dieses Funktion aktualisiert das gameBoard
+def refreshGameBoard():
+    global textGameMessage
+    global gameArea_canvas
+    global gameMessage
+
+    refreshGameStatus()
+
+    refreshGameMessage()
+            
+    gameArea_canvas.itemconfig(textGameMessage, text=gameMessage)
+    for row in range(0,3):
+        for col in range(0,3):
+            showCell(row, col)
 
 def showGameArea():
     global playerName1
     global playerName2
     global numberOfPlayers
+    global gameArea_canvas
 
     window.geometry("966x742")
     window.configure(bg = "#ffffff")
-    canvas = Canvas(
+    gameArea_canvas = Canvas(
         window,
         bg = "#ffffff",
         height = 742,
@@ -286,7 +404,7 @@ def showGameArea():
         bd = 0,
         highlightthickness = 0,
         relief = "ridge")
-    canvas.place(x = 0, y = 0)
+    gameArea_canvas.place(x = 0, y = 0)
 
     btn_ShowStartScreen = Button(
         image = IMG_MENU,
@@ -312,7 +430,7 @@ def showGameArea():
         width = 137,
         height = 35)
 
-    canvas.create_text(
+    gameArea_canvas.create_text(
         125.5, 274.0,
         text = playerName1.get(),
         fill = "#000000",
@@ -324,37 +442,36 @@ def showGameArea():
     else:
         player2 = "Computer"
 
-    canvas.create_text(
+    gameArea_canvas.create_text(
         845.5, 274.0,
         text = player2,
         fill = "#000000",
         font = ("None", int(23.0)))
 
-    canvas.create_text(
+    gameArea_canvas.create_text(
         125.0, 493.5,
         text = 0,
         fill = "#000000",
         font = ("None", int(23.0)))
 
-    canvas.create_text(
+    gameArea_canvas.create_text(
         846.0, 493.5,
         text = 0,
         fill = "#000000",
         font = ("None", int(23.0)))
 
-    # Zeige das Spielfeld an
-    for row in range(0,3):
-        for col in range(0,3):
-            showCell(row, col)
-
-    canvas.create_text(
+   
+    global textGameMessage
+    textGameMessage = gameArea_canvas.create_text(
         483.0, 119.0,
         text = gameMessage,
         fill = "#000000",
         font = ("Inter-Regular", int(36.0)))
 
-    canvas.create_image(483, 371, image=IMG_INTERFACE)
+    gameArea_canvas.create_image(483, 371, image=IMG_INTERFACE)
 
+     # Zeige das Spielfeld an
+    refreshGameBoard()
 
 showStartScreen()
 
