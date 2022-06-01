@@ -25,12 +25,11 @@ playerName2 = StringVar()
 def close():
     window.quit()
 
-def initWindow():
+def showStartScreen():
     window.geometry("641x742") # Größe des Fensters
     window.configure(bg = "#ffffff")
     window.resizable(True, True) # Legt fest, ob das Fenster skalierbar ist
 
-def showStartScreen():
     canvas = Canvas(
         window,
         bg = "#ffffff", # Hintergrundfarbe
@@ -247,7 +246,7 @@ def showGameArea():
         relief = "flat")
 
     btn_Newgame.place(
-        x = 839, y = 15,
+        x = 801, y = 15,
         width = 137,
         height = 35)
 
@@ -399,7 +398,6 @@ def showGameArea():
     canvas.create_image(483, 371, image=IMG_INTERFACE)
 
 
-initWindow()
 showStartScreen()
 
 window.mainloop()
