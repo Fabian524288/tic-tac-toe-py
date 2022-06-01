@@ -14,6 +14,9 @@ IMG_PLAYER2 = PhotoImage(file = "./assets/btn-2players.png")
 IMG_GO = PhotoImage(file = "./assets/btn-start.png")
 TEXTBOX = PhotoImage(file = "./assets/img-textbox.png")
 IMG_CELL = PhotoImage(file = "./assets/cell.png")
+IMG_INTERFACE = PhotoImage(file = f"./assets/interface.png")
+IMG_NEWGAME = PhotoImage(file = f"./assets/btn-newgame.png")
+IMG_MENU = PhotoImage(file = f"./assets/btn-menu.png")
 
 numberOfPlayers = 0
 playerName1 = StringVar()
@@ -225,19 +228,19 @@ def showGameArea():
     canvas.place(x = 0, y = 0)
 
     btn_ShowStartScreen = Button(
-        image = PhotoImage(file = f"./assets/btn-menu.png"),
+        image = IMG_MENU,
         borderwidth = 0,
         highlightthickness = 0,
         command = showStartScreen,
         relief = "flat")
 
     btn_ShowStartScreen.place(
-        x = 441, y = 15,
-        width = 156,
+        x = 641, y = 15,
+        width = 100,
         height = 35)
 
     btn_Newgame = Button(
-        image = PhotoImage(file = f"./assets/btn-newgame.png"),
+        image = IMG_NEWGAME,
         borderwidth = 0,
         highlightthickness = 0,
         command = None,
@@ -245,7 +248,7 @@ def showGameArea():
 
     btn_Newgame.place(
         x = 839, y = 15,
-        width = 100,
+        width = 137,
         height = 35)
 
     canvas.create_text(
@@ -393,7 +396,7 @@ def showGameArea():
         fill = "#000000",
         font = ("Inter-Regular", int(36.0)))
 
-    canvas.create_image(20, 0, image=PhotoImage(file = f"./assets/toolbar.png"))
+    canvas.create_image(483, 371, image=IMG_INTERFACE)
 
 
 initWindow()
