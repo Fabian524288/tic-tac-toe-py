@@ -3,6 +3,14 @@ from distutils.command.sdist import show_formats
 from tkinter import *
 from tkinter.tix import CELL, TEXT
 from turtle import st
+import enum
+
+class GameStatus(enum.Enum):
+    NOT_STARTED = 1
+    PLAYING = 2
+    PLAYER1_WIN = 3
+    PLAYER1_LOSE = 4
+    DRAW = 5
 
 window = Tk()
 
@@ -12,15 +20,21 @@ IMG_BACKGROUND = PhotoImage(file = "./assets/background.png")
 IMG_PLAYER1 = PhotoImage(file = "./assets/btn-1player.png")
 IMG_PLAYER2 = PhotoImage(file = "./assets/btn-2players.png")
 IMG_GO = PhotoImage(file = "./assets/btn-start.png")
-TEXTBOX = PhotoImage(file = "./assets/img-textbox.png")
 IMG_CELL = PhotoImage(file = "./assets/cell.png")
-IMG_INTERFACE = PhotoImage(file = f"./assets/interface.png")
-IMG_NEWGAME = PhotoImage(file = f"./assets/btn-newgame.png")
-IMG_MENU = PhotoImage(file = f"./assets/btn-menu.png")
+IMG_INTERFACE = PhotoImage(file = "./assets/interface.png")
+IMG_NEWGAME = PhotoImage(file = "./assets/btn-newgame.png")
+IMG_MENU = PhotoImage(file = "./assets/btn-menu.png")
+SYMBOL_X = PhotoImage(file = "./assets/cross.png")
+SYMBOL_O = PhotoImage(file = "./assets/nought.png")
 
-numberOfPlayers = 0
+numberOfPlayers = 0 # Anzahl der Spieler
 playerName1 = StringVar()
 playerName2 = StringVar()
+gameStatus = GameStatus.NOT_STARTED
+player1inTurn = None
+gameMessage = None
+gameBoard = [[0,0,0],[0,0,0],[0,0,0]]
+# 0 = leer, 1 = SYMBOL_X, 2 = SYMBOL_O
 
 def close():
     window.quit()
@@ -28,7 +42,7 @@ def close():
 def showStartScreen():
     window.geometry("641x742") # Größe des Fensters
     window.configure(bg = "#ffffff")
-    window.resizable(True, True) # Legt fest, ob das Fenster skalierbar ist
+    window.resizable(False, False) # Legt fest, ob das Fenster skalierbar ist
 
     canvas = Canvas(
         window,
@@ -209,6 +223,54 @@ def inputPlayerName1and2():
         width = 215.0,
         height = 34)
 
+def getPlayer2Name():
+    global numberOfPlayers
+    if numberOfPlayers == 1:
+        return "Computer"
+    if numberOfPlayers == 2:
+        return playerName2.get()
+
+def startPlaying():
+    global playerName1
+    global player1inTurn
+    global gameStatus
+    showGameArea()
+    player1inTurn = True
+    while (gameStatus == GameStatus.PLAYING):
+        if (player1inTurn):
+            gameMessage = f"{playerName1.get()}'s turn!"
+        else:
+            gameMessage = f"{getPlayer2Name()}'s turn!"
+
+
+def showCell(row, col):
+    global gameBoard
+    cellImage = IMG_CELL
+    cellValue = gameBoard[row][col]
+    if cellValue == 1:
+        cellImage = SYMBOL_X
+    elif cellValue == 2:
+        cellImage = SYMBOL_O
+    cell = Button(
+        image = cellImage,
+        borderwidth = 0,
+        highlightthickness = 0,
+        command = None,
+        relief = "flat")
+
+    x0 = 242
+    y0 = 174
+    w = 140
+    h = 140
+    gap = 31
+
+    cell.place(
+        x = x0 + col*(gap + w), 
+        y = y0 + row*(gap + h),
+        width = 140,
+        height = 140)
+
+
 def showGameArea():
     global playerName1
     global playerName2
@@ -281,117 +343,13 @@ def showGameArea():
         font = ("None", int(23.0)))
 
     # Zeige das Spielfeld an
-    cell1_1 = Button(
-        image = IMG_CELL,
-        borderwidth = 0,
-        highlightthickness = 0,
-        command = None,
-        relief = "flat")
-
-    cell1_1.place(
-        x = 242, y = 174,
-        width = 140,
-        height = 140)
-
-    cell1_2 = Button(
-        image = IMG_CELL,
-        borderwidth = 0,
-        highlightthickness = 0,
-        command = None,
-        relief = "flat")
-
-    cell1_2.place(
-        x = 413, y = 174,
-        width = 140,
-        height = 140)
-
-    cell1_3 = Button(
-        image = IMG_CELL,
-        borderwidth = 0,
-        highlightthickness = 0,
-        command = None,
-        relief = "flat")
-
-    cell1_3.place(
-        x = 584, y = 174,
-        width = 140,
-        height = 140)
-
-    cell2_1 = Button(
-        image = IMG_CELL,
-        borderwidth = 0,
-        highlightthickness = 0,
-        command = None,
-        relief = "flat")
-
-    cell2_1.place(
-        x = 242, y = 345,
-        width = 140,
-        height = 140)
-
-    cell2_2 = Button(
-        image = IMG_CELL,
-        borderwidth = 0,
-        highlightthickness = 0,
-        command = None,
-        relief = "flat")
-
-    cell2_2.place(
-        x = 413, y = 345,
-        width = 140,
-        height = 140)
-
-    cell2_3 = Button(
-        image = IMG_CELL,
-        borderwidth = 0,
-        highlightthickness = 0,
-        command = None,
-        relief = "flat")
-
-    cell2_3.place(
-        x = 584, y = 345,
-        width = 140,
-        height = 140)
-
-    cell3_1 = Button(
-        image = IMG_CELL,
-        borderwidth = 0,
-        highlightthickness = 0,
-        command = None,
-        relief = "flat")
-
-    cell3_1.place(
-        x = 242, y = 516,
-        width = 140,
-        height = 140)
-
-    cell3_2 = Button(
-        image = IMG_CELL,
-        borderwidth = 0,
-        highlightthickness = 0,
-        command = None,
-        relief = "flat")
-
-    cell3_2.place(
-        x = 413, y = 516,
-        width = 140,
-        height = 140)
-
-    cell3_3 = Button(
-        image = IMG_CELL,
-        borderwidth = 0,
-        highlightthickness = 0,
-        command = None,
-        relief = "flat")
-
-    cell3_3.place(
-        x = 584, y = 516,
-        width = 140,
-        height = 140)
+    for row in range(0,3):
+        for col in range(0,3):
+            showCell(row, col)
 
     canvas.create_text(
         483.0, 119.0,
-        text = "counter",
+        text = gameMessage,
         fill = "#000000",
         font = ("Inter-Regular", int(36.0)))
 
