@@ -1,9 +1,9 @@
-from asyncio.windows_events import NULL
-from distutils.command.sdist import show_formats
+# author: Gia Huy Ngo
+# date: 02-06-2022
 from tkinter import *
-from tkinter.tix import CELL, TEXT
-from turtle import st
 import enum
+import random as rand
+
 
 class GameStatusEnum(enum.Enum):
     NOT_END = 1
@@ -13,7 +13,8 @@ class GameStatusEnum(enum.Enum):
 
 window = Tk()
 
-IMG_PLAY = PhotoImage(file = "./assets/btn-play.png") # Lade ein Bild aus Computer
+# Lädt die Bilder zur Oberfläche
+IMG_PLAY = PhotoImage(file = "./assets/btn-play.png")
 IMG_QUIT = PhotoImage(file = "./assets/btn-quit.png")
 IMG_BACKGROUND = PhotoImage(file = "./assets/background.png")
 IMG_PLAYER1 = PhotoImage(file = "./assets/btn-1player.png")
@@ -37,10 +38,29 @@ gameArea_canvas = None
 gameBoard = [[0,0,0],[0,0,0],[0,0,0]]
 # 0 = leer, 1 = SYMBOL_X, 2 = SYMBOL_O
 
+# Automatischer Spieler (Computer)
+def AIplay_easy():
+    global player1inTurn
+    global gameStatus
+    global gameBoard
+    done = False
+    if gameStatus == GameStatusEnum.NOT_END:
+        while not done:
+            row = rand.randint(0,2)
+            col = rand.randint(0,2)
+            if gameBoard[row][col] == 0:
+                gameBoard[row][col] = 2
+                player1inTurn = True
+                done = True
+        refreshGameBoard()
+
+# Schliesst das Fenster
 def close():
     window.quit()
 
+# Zeigt das 1. Screen 
 def showStartScreen():
+    window.title("Tic Tac Toe")
     window.geometry("641x742") # Größe des Fensters
     window.configure(bg = "#ffffff")
     window.resizable(False, False) # Legt fest, ob das Fenster skalierbar ist
@@ -59,7 +79,7 @@ def showStartScreen():
         image = IMG_PLAY,
         borderwidth = 0,
         highlightthickness = 0,
-        command = showPlayingScreen,
+        command = showPlayerChoice,
         relief = "flat")
 
     btnPlay.place(
@@ -83,8 +103,8 @@ def showStartScreen():
         318.0, 375.0,
         image=IMG_BACKGROUND)
 
-
-def showPlayingScreen():
+# Blendet den Bildschirm des Spielerwahls ein
+def showPlayerChoice():
     canvas = Canvas(
         window,
         bg = "#ffffff",
@@ -119,6 +139,7 @@ def showPlayingScreen():
         width = 281,
         height = 79)
 
+# Prüft, ob Spieler 1 gewonnen hat
 def checkPlayer1win():
     global gameBoard
     if gameBoard[0][0] == 1 and gameBoard[0][1] == 1 and gameBoard [0][2] == 1:
@@ -140,6 +161,7 @@ def checkPlayer1win():
     else:
         return False
 
+# Prüft, ob Spieler 2 gewonnen hat
 def checkPlayer2win():
     global gameBoard
     if gameBoard[0][0] == 2 and gameBoard[0][1] == 2 and gameBoard [0][2] == 2:
@@ -161,7 +183,8 @@ def checkPlayer2win():
     else:
         return False
 
-def checkGameNotEnd(): # Überprüft, ob das Spiel noch läuft
+# Überprüft, ob das Spiel noch läuft
+def checkGameNotEnd():
     global gameBoard
     for row in range(0,3):
         for col in range(0,3):
@@ -169,6 +192,7 @@ def checkGameNotEnd(): # Überprüft, ob das Spiel noch läuft
                 return True
     return False
 
+# Name von Spieler 1: Eingabefeld wird erzeugt (Spieler 1 gegen Computer)
 def inputPlayerName1():
     global numberOfPlayers
     numberOfPlayers = 1
@@ -213,6 +237,7 @@ def inputPlayerName1():
         width = 215.0,
         height = 34)
 
+# Namen von Spieler 1 & 2: Eingabefeld wird erzeugt (Spieler 1 gegen Spieler 2)
 def inputPlayerName1and2():
     global numberOfPlayers
     numberOfPlayers = 2
@@ -274,6 +299,7 @@ def inputPlayerName1and2():
         width = 215.0,
         height = 34)
 
+# Erzeuge den Namen von Spieler 2
 def getPlayer2Name():
     global numberOfPlayers
     if numberOfPlayers == 1:
@@ -281,14 +307,31 @@ def getPlayer2Name():
     if numberOfPlayers == 2:
         return playerName2.get()
 
+# Das Spielfeld wird dadurch zurückgesetzt
 def startPlaying():
-    print('Start playing')
     global playerName1
     global player1inTurn
     global gameStatus
     player1inTurn = True
     showGameArea()
 
+# Gebe diese Nachricht aus, wenn Spieler 1 gewinnt
+def getPlayer1winMessage():
+    global numberOfPlayers
+    if numberOfPlayers == 1:
+        return "You win! Congrats!"
+    else:
+        return f"{playerName1.get()} wins!"
+
+# Gebe diese Nachricht aus, wenn Spieler 1 verliert
+def getPlayer1loseMessage():
+    global numberOfPlayers
+    if numberOfPlayers == 1:
+        return "You lose :-("
+    else:
+        return f"{playerName1.get()} loses!"
+
+# Aktualisiere die Spielnachricht
 def refreshGameMessage():
     global gameMessage
     global player1inTurn
@@ -297,25 +340,22 @@ def refreshGameMessage():
     if gameStatus == GameStatusEnum.DRAW:
         gameMessage = "It's a draw"
     elif gameStatus == GameStatusEnum.PLAYER1_WIN:
-        gameMessage = "You win! Congrats!"
+        gameMessage = getPlayer1winMessage()
     elif gameStatus == GameStatusEnum.PLAYER1_LOSE:
-        gameMessage = "You lose :'("
+        gameMessage = getPlayer1loseMessage()
     else:
         if (player1inTurn):
             gameMessage = f"{playerName1.get()}'s turn!"
         else:
             gameMessage = f"{getPlayer2Name()}'s turn!"
 
-    print('refreshGameMessage')
-    print(gameMessage)
-
+# Erstelle `clickHandler` für eine Zelle
 def createCellClickHandler(row, col):
     def OnClick():
         global gameBoard
         global player1inTurn
         global gameStatus
         if gameStatus != GameStatusEnum.NOT_END:
-            print('GAME END°!')
             return
         cellValue = gameBoard[row][col]
         if cellValue != 0:
@@ -324,14 +364,16 @@ def createCellClickHandler(row, col):
             gameBoard[row][col] = 1
             player1inTurn = False
             refreshGameBoard()
+            if numberOfPlayers == 1:
+                AIplay_easy()
         else:
+            # Spieler 2 ist dran
             gameBoard[row][col] = 2
             player1inTurn = True
             refreshGameBoard()
-        print('------------')
-        print(gameBoard)
     return OnClick
 
+# Blendet eine Zelle bei `(row, col)` ein
 def showCell(row, col):
     global gameBoard
     cellImage = IMG_CELL
@@ -359,6 +401,7 @@ def showCell(row, col):
         width = 140,
         height = 140)
 
+# Spielzustand wird Aktualisiert
 def refreshGameStatus():
     global gameStatus
     if checkPlayer1win():
@@ -370,8 +413,7 @@ def refreshGameStatus():
     else:
         gameStatus = GameStatusEnum.DRAW
 
-    print('refreshGamestatus')
-    print(gameStatus)
+
 
 # Dieses Funktion aktualisiert das gameBoard
 def refreshGameBoard():
@@ -388,22 +430,26 @@ def refreshGameBoard():
         for col in range(0,3):
             showCell(row, col)
 
+# Setze das Spielfeld zurück bei NewGame
 def clearBoard():
     global gameBoard
     for row in range(0,3):
         for col in range(0,3):
             gameBoard[row][col] = 0
 
+# Starte das Spiel neu
 def resetGame():
     global gameStatus
     clearBoard()
     gameStatus = GameStatusEnum.NOT_END
     refreshGameBoard()
 
+# Das aktuelle Fenster wird geschlossen, danach öffne ein neues Fenster mit Menü
 def gotoMenu():
     resetGame()
     showStartScreen()
 
+# Spielfeld wird eingeblendet
 def showGameArea():
     global playerName1
     global playerName2
@@ -464,19 +510,6 @@ def showGameArea():
         fill = "#000000",
         font = ("None", int(23.0)))
 
-    gameArea_canvas.create_text(
-        125.0, 493.5,
-        text = 0,
-        fill = "#000000",
-        font = ("None", int(23.0)))
-
-    gameArea_canvas.create_text(
-        846.0, 493.5,
-        text = 0,
-        fill = "#000000",
-        font = ("None", int(23.0)))
-
-   
     global textGameMessage
     textGameMessage = gameArea_canvas.create_text(
         483.0, 119.0,
@@ -486,7 +519,7 @@ def showGameArea():
 
     gameArea_canvas.create_image(483, 371, image=IMG_INTERFACE)
 
-     # Zeige das Spielfeld an
+    # Lade das Spielfeld neu
     refreshGameBoard()
 
 showStartScreen()
